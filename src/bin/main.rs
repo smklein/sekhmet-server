@@ -1,5 +1,5 @@
 extern crate sekhmet_server as sekhmet;
-use sekhmet::ThreadPool;
+use sekhmet::thread_pool::ThreadPool;
 
 use std::io::prelude::*;
 use std::net::TcpListener;
