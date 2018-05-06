@@ -1,4 +1,5 @@
 extern crate sekhmet_server as sekhmet;
+use sekhmet::calendar::Calendar;
 use sekhmet::thread_pool::ThreadPool;
 
 use std::io::prelude::*;
@@ -9,6 +10,12 @@ use std::thread;
 use std::time::Duration;
 
 fn main() {
+    println!("sekhmet server... STARTING");
+
+    let _c = Calendar::new();
+
+    println!("sekhmet server... created calendar");
+
     let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
     let pool = ThreadPool::new(4);
 

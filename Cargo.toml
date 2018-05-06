@@ -5,3 +5,6 @@ authors = ["Sean Klein <seanmarionklein@gmail.com>"]
 
 [dependencies]
 google-calendar3 = "*"
+hyper = "*"
+hyper-rustls = "*"
+yup-oauth2 = "*"

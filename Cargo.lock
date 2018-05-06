@@ -379,6 +379,9 @@ name = "sekhmet-server"
 version = "0.1.0"
 dependencies = [
  "google-calendar3 1.0.7+20171205 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hyper 0.10.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hyper-rustls 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "yup-oauth2 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
