@@ -5,7 +5,7 @@ use std::sync::Mutex;
 
 trait FnBox {
     fn call_closure_in_box(self: Box<Self>);
-  }
+}
 
 // For all types that are "Functions which are only called once", add the
 // function "call_closure_in_box", which allows calling the function from
@@ -14,7 +14,7 @@ impl<F: FnOnce()> FnBox for F {
     fn call_closure_in_box(self: Box<F>) {
         (*self)()
     }
-  }
+}
 
 type Job = Box<FnBox + Send + 'static>;
 
@@ -55,15 +55,12 @@ impl ThreadPool {
             workers.push(Worker::new(id, Arc::clone(&receiver)));
         }
 
-        ThreadPool {
-            workers,
-            sender,
-        }
+        ThreadPool { workers, sender }
     }
 
     pub fn execute<F>(&self, f: F)
-        where
-            F: FnOnce() + Send + 'static
+    where
+        F: FnOnce() + Send + 'static,
     {
         let job = Box::new(f);
 
@@ -99,20 +96,17 @@ struct Worker {
 }
 
 impl Worker {
-    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Message>>>) ->
-        Worker {
+    fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Message>>>) -> Worker {
 
-        let thread = thread::spawn(move ||{
-            loop {
-                let message = receiver.lock().unwrap().recv().unwrap();
+        let thread = thread::spawn(move || loop {
+            let message = receiver.lock().unwrap().recv().unwrap();
 
-                match message {
-                    Message::NewJob(job) => {
-                        job.call_closure_in_box();
-                    },
-                    Message::Terminate => {
-                        break;
-                    },
+            match message {
+                Message::NewJob(job) => {
+                    job.call_closure_in_box();
+                }
+                Message::Terminate => {
+                    break;
                 }
             }
         });

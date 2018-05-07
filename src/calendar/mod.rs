@@ -4,48 +4,63 @@ extern crate yup_oauth2 as oauth2;
 extern crate google_calendar3 as calendar3;
 
 // Ineract with Google Calendar.
-use self::calendar3::Channel;
-use self::calendar3::{Result, Error};
 use self::calendar3::CalendarHub;
 
 // Standard API access.
-use std::default::Default;
+use std::io;
 use std::path::Path;
 
 // Authentication with Google APIs.
-use self::oauth2::{Authenticator, DefaultAuthenticatorDelegate, ApplicationSecret, MemoryStorage};
+use self::oauth2::{Authenticator, DefaultAuthenticatorDelegate, DiskTokenStorage};
 
 pub struct Calendar {
-    id: u32,
+    hub: CalendarHub<
+        hyper::Client,
+        Authenticator<DefaultAuthenticatorDelegate, DiskTokenStorage, hyper::Client>,
+    >,
+    id: String,
+}
+
+#[derive(Debug)]
+pub enum CalendarError {
+    Io(io::Error),
+    CalendarAPI(calendar3::Error),
+    Other(String),
+}
+
+impl From<io::Error> for CalendarError {
+    fn from(err: io::Error) -> CalendarError {
+        CalendarError::Io(err)
+    }
+}
+
+impl From<calendar3::Error> for CalendarError {
+    fn from(err: calendar3::Error) -> CalendarError {
+        CalendarError::CalendarAPI(err)
+    }
+}
+
+impl From<String> for CalendarError {
+    fn from(err: String) -> CalendarError {
+        CalendarError::Other(err)
+    }
 }
 
 impl Calendar {
-    pub fn new() -> Calendar {
-        let id = 0;
-
+    pub fn new() -> Result<Calendar, CalendarError> {
         // Get an ApplicationSecret instance by some means. It contains the
         // `client_id` and `client_secret`, among other things.
         let secret_path = Path::new("secrets/secret.json");
-        let secret = match oauth2::read_application_secret(secret_path) {
-            Ok(secret) => secret,
-            Err(err) => {
-                panic!("Cannot open secrets/secret.json: {}", err);
-            }
-        };
+        let secret = try!(oauth2::read_application_secret(secret_path));
+        let token_storage = try!(DiskTokenStorage::new(&"secrets/token".to_string()));
 
-        // Instantiate the authenticator. It will choose a suitable
-        // authentication flow for you, unless you replace  `None` with the
-        // desired Flow.  Provide your own `AuthenticatorDelegate` to adjust the
-        // way it operates and get feedback about what's going on. You probably
-        // want to bring in your own `TokenStorage` to persist tokens and
-        // retrieve them from storage.
         let auth = Authenticator::new(
             &secret,
             DefaultAuthenticatorDelegate,
             hyper::Client::with_connector(hyper::net::HttpsConnector::new(
                 hyper_rustls::TlsClient::new(),
             )),
-            <MemoryStorage as Default>::default(),
+            token_storage,
             None,
         );
         let hub = CalendarHub::new(
@@ -54,37 +69,23 @@ impl Calendar {
             )),
             auth,
         );
-        // As the method needs a request, you would usually fill it with the
-        // desired information into the respective structure. Some of the parts
-        // shown here might not be applicable !  Values shown here are possibly
-        // random and not representative !
-        let req = Channel::default();
+        let cal = Calendar {
+            hub,
+            id: "None".to_string(),
+        };
 
-        // You can configure optional parameters by calling the respective
-        // setters at will, and execute the final call using `doit()`.  Values
-        // shown here are possibly random and not representative !
-        let result = hub.calendar_list().list().doit();
+        Ok(cal)
+    }
 
-        match result {
-            Err(e) => {
-                match e {
-                    // The Error enum provides details about what exactly happened.
-                    // You can also just use its `Debug`, `Display` or `Error` traits
-                    Error::HttpError(_) |
-                    Error::MissingAPIKey |
-                    Error::MissingToken(_) |
-                    Error::Cancelled |
-                    Error::UploadSizeLimitExceeded(_, _) |
-                    Error::Failure(_) |
-                    Error::BadRequest(_) |
-                    Error::FieldClash(_) |
-                    Error::JsonDecodeError(_, _) => println!("Failed request: {}", e),
-                }
-            }
-            Ok(res) => println!("Success: {:?}", res),
-        }
+    pub fn set_primary(&mut self) -> Result<(), CalendarError> {
+        let (_, list) = try!(self.hub.calendar_list().list().doit());
+        let items = try!(list.items.ok_or("No calendars listed".to_string()));
+        let primary = try!(items.iter().find(|&entry| entry.primary.is_some()).ok_or(
+            "No primary".to_string(),
+        ));
 
-        Calendar { id }
+        self.id = try!(primary.id.clone().ok_or("Primary missing ID".to_string()));
+        Ok(())
     }
 }
 

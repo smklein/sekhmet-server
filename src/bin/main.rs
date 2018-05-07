@@ -12,9 +12,13 @@ use std::time::Duration;
 fn main() {
     println!("sekhmet server... STARTING");
 
-    let _c = Calendar::new();
+    let mut c = Calendar::new().unwrap();
 
     println!("sekhmet server... created calendar");
+
+    c.set_primary().unwrap();
+
+    println!("sekhmet server... listed calendar");
 
     let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
     let pool = ThreadPool::new(4);
