@@ -20,7 +20,11 @@ use self::oauth2::{Authenticator, DefaultAuthenticatorDelegate, DiskTokenStorage
 pub struct Calendar {
     hub: calendar3::CalendarHub<
         hyper::Client,
-        Authenticator<DefaultAuthenticatorDelegate, DiskTokenStorage, hyper::Client>,
+        Authenticator<
+            DefaultAuthenticatorDelegate,
+            DiskTokenStorage,
+            hyper::Client,
+        >,
     >,
     id: String,
 }
@@ -85,14 +89,24 @@ impl fmt::Display for Event {
         if self.location == "" {
             write!(f, "{} - {}: {}", self.start, self.end, self.summary)
         } else {
-            write!(f, "{} - {}: {} @ {}", self.start, self.end, self.summary,
-                   self.location)
+            write!(
+                f,
+                "{} - {}: {} @ {}",
+                self.start,
+                self.end,
+                self.summary,
+                self.location
+            )
         }
     }
 }
 
 fn parse_time(evt: &Option<calendar3::EventDateTime>) -> Option<chrono::DateTime<Utc>> {
-    evt.as_ref()?.date_time.as_ref()?.parse::<chrono::DateTime<Utc>>().ok()
+    evt.as_ref()?
+        .date_time
+        .as_ref()?
+        .parse::<chrono::DateTime<Utc>>()
+        .ok()
 }
 
 fn parse_event(e: calendar3::Event) -> Option<Event> {
@@ -110,7 +124,7 @@ fn parse_event(e: calendar3::Event) -> Option<Event> {
     let location = e.location.as_ref().unwrap_or(&"".to_string()).to_string();
     let original = e;
 
-    Some(Event{
+    Some(Event {
         id,
         start,
         end,
@@ -187,11 +201,7 @@ impl Calendar {
     }
 
     /// Update the color of a calendar event.
-    pub fn set_color(
-        &self,
-        event: &mut Event,
-        color: Color,
-    ) -> Result<(), CalendarError> {
+    pub fn set_color(&self, event: &mut Event, color: Color) -> Result<(), CalendarError> {
         event.original.color_id = Some(color_id(color).to_string());
 
         try!(

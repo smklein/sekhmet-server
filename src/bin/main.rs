@@ -14,14 +14,17 @@ use std::fs::File;
 use std::thread;
 use std::time::Duration;
 
-fn sekhmet_events(c: &Calendar) -> Result<Vec<Event>, CalendarError>{
+fn sekhmet_events(c: &Calendar) -> Result<Vec<Event>, CalendarError> {
     let start = Utc::now();
     let end = start + CDuration::days(1);
     let events = try!(c.get_events(start, end));
 
-    Ok(events.into_iter()
-       .filter(|e| e.summary.starts_with("#sek "))
-       .collect())
+    Ok(
+        events
+            .into_iter()
+            .filter(|e| e.summary.starts_with("#sek "))
+            .collect(),
+    )
 }
 
 fn main() {
@@ -53,9 +56,7 @@ fn main() {
     for stream in listener.incoming().take(10) {
         let stream = stream.unwrap();
 
-        pool.execute(|| {
-            handle_connection(stream);
-        });
+        pool.execute(|| { handle_connection(stream); });
     }
 
     println!("Shutting down.");
@@ -77,13 +78,13 @@ fn handle_connection(mut stream: TcpStream) {
         ("HTTP/1.1 404 NOT FOUND\r\n\r\n", "html/404.html")
     };
 
-     let mut file = File::open(filename).unwrap();
-     let mut contents = String::new();
+    let mut file = File::open(filename).unwrap();
+    let mut contents = String::new();
 
-     file.read_to_string(&mut contents).unwrap();
+    file.read_to_string(&mut contents).unwrap();
 
-     let response = format!("{}{}", status_line, contents);
+    let response = format!("{}{}", status_line, contents);
 
-     stream.write(response.as_bytes()).unwrap();
-     stream.flush().unwrap();
+    stream.write(response.as_bytes()).unwrap();
+    stream.flush().unwrap();
 }
