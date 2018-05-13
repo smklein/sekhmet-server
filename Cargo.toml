@@ -4,7 +4,9 @@ version = "0.1.0"
 authors = ["Sean Klein <seanmarionklein@gmail.com>"]
 
 [dependencies]
+chrono = "*"
 google-calendar3 = "*"
-hyper = "*"
-hyper-rustls = "*"
+hyper = "0.10.13"
+hyper-rustls = "0.6"
+time = "*"
 yup-oauth2 = "*"

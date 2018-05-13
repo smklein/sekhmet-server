@@ -1,6 +1,11 @@
 extern crate sekhmet_server as sekhmet;
-use sekhmet::calendar::Calendar;
+extern crate chrono;
+
+use sekhmet::calendar::{Calendar, CalendarError, Color, Event};
 use sekhmet::thread_pool::ThreadPool;
+
+use self::chrono::prelude::*;
+use self::chrono::Duration as CDuration;
 
 use std::io::prelude::*;
 use std::net::TcpListener;
@@ -8,6 +13,16 @@ use std::net::TcpStream;
 use std::fs::File;
 use std::thread;
 use std::time::Duration;
+
+fn sekhmet_events(c: &Calendar) -> Result<Vec<Event>, CalendarError>{
+    let start = Utc::now();
+    let end = start + CDuration::days(1);
+    let events = try!(c.get_events(start, end));
+
+    Ok(events.into_iter()
+       .filter(|e| e.summary.starts_with("#sek "))
+       .collect())
+}
 
 fn main() {
     println!("sekhmet server... STARTING");
@@ -18,7 +33,19 @@ fn main() {
 
     c.set_primary().unwrap();
 
-    println!("sekhmet server... listed calendar");
+    let events = match sekhmet_events(&c) {
+        Ok(events) => events,
+        Err(err) => {
+            panic!("Sekhmet server cannot acquire events: {:?}", err);
+        }
+    };
+
+    for mut event in events {
+        println!("{}", event);
+        if let Err(err) = c.set_color(&mut event, Color::Purple) {
+            panic!("Sekhmet server cannot set color: {:?}", err)
+        }
+    }
 
     let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
     let pool = ThreadPool::new(4);
