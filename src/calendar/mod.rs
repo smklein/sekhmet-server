@@ -110,10 +110,6 @@ fn parse_time(evt: &Option<calendar3::EventDateTime>) -> Option<chrono::DateTime
 }
 
 fn parse_event(e: calendar3::Event) -> Option<Event> {
-    if let Some(color) = e.color_id.as_ref() {
-        println!("Color: {}", color);
-    }
-
     // Required fields
     let id = e.id.as_ref()?.to_string();
     let start = parse_time(&e.start)?;

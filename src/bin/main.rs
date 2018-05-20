@@ -2,6 +2,7 @@ extern crate sekhmet_server as sekhmet;
 extern crate chrono;
 
 use sekhmet::calendar::{Calendar, CalendarError, Color, Event};
+use sekhmet::gpio::Gpio;
 use sekhmet::thread_pool::ThreadPool;
 
 use self::chrono::prelude::*;
@@ -18,6 +19,11 @@ fn sekhmet_events(c: &Calendar) -> Result<Vec<Event>, CalendarError> {
     let start = Utc::now();
     let end = start + CDuration::days(1);
     let events = try!(c.get_events(start, end));
+
+    println!("--- All events:");
+    for e in events.iter() {
+        println!("{}", e);
+    }
 
     Ok(
         events
@@ -43,6 +49,7 @@ fn main() {
         }
     };
 
+    println!("--- Sekhmet events:");
     for mut event in events {
         println!("{}", event);
         if let Err(err) = c.set_color(&mut event, Color::Purple) {
@@ -50,6 +57,12 @@ fn main() {
         }
     }
 
+    let gpio = Gpio::new();
+
+    gpio.led_toggle(Duration::from_millis(1000));
+
+    // TODO(smklein): Listen on domain (or static ip?)
+    // TODO(smklein): Authenticate to access
     let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
     let pool = ThreadPool::new(4);
 
