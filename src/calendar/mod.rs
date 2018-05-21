@@ -86,18 +86,23 @@ fn color_id(c: Color) -> &'static str {
 
 impl fmt::Display for Event {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.location == "" {
-            write!(f, "{} - {}: {}", self.start, self.end, self.summary)
+        let location = if self.location == "" {
+            "".to_string()
         } else {
-            write!(
-                f,
-                "{} - {}: {} @ {}",
-                self.start,
-                self.end,
-                self.summary,
-                self.location
-            )
-        }
+            format!(" @ {}", self.location)
+        };
+
+        let color = match self.original.color_id.clone() {
+            Some(id) => format!("[color: {}] ", id),
+            None => "".to_string(),
+        };
+
+        write!(f, "{} - {}: {}{}{}",
+               self.start,
+               self.end,
+               color,
+               self.summary,
+               location)
     }
 }
 
