@@ -5,26 +5,20 @@ extern crate hyper_rustls;
 extern crate time;
 extern crate yup_oauth2 as oauth2;
 
+// Authentication.
+use auth;
+
 // Time.
 use self::chrono::prelude::*;
 
 // Standard API access.
 use std::fmt;
-use std::io;
-use std::path::Path;
-
-// Authentication with Google APIs.
-use self::oauth2::{Authenticator, DefaultAuthenticatorDelegate, DiskTokenStorage};
 
 /// An opaque wrapper around a Google Calendar object.
 pub struct Calendar {
     hub: calendar3::CalendarHub<
         hyper::Client,
-        Authenticator<
-            DefaultAuthenticatorDelegate,
-            DiskTokenStorage,
-            hyper::Client,
-        >,
+        auth::Authorizer,
     >,
     id: String,
 }
@@ -137,14 +131,14 @@ fn parse_event(e: calendar3::Event) -> Option<Event> {
 
 #[derive(Debug)]
 pub enum CalendarError {
-    Io(io::Error),
+    Auth(auth::AuthError),
     CalendarAPI(calendar3::Error),
     Other(String),
 }
 
-impl From<io::Error> for CalendarError {
-    fn from(err: io::Error) -> CalendarError {
-        CalendarError::Io(err)
+impl From<auth::AuthError> for CalendarError {
+    fn from(err: auth::AuthError) -> CalendarError {
+        CalendarError::Auth(err)
     }
 }
 
@@ -162,21 +156,7 @@ impl From<String> for CalendarError {
 
 impl Calendar {
     pub fn new() -> Result<Calendar, CalendarError> {
-        // Get an ApplicationSecret instance by some means. It contains the
-        // `client_id` and `client_secret`, among other things.
-        let secret_path = Path::new("secrets/secret.json");
-        let secret = try!(oauth2::read_application_secret(secret_path));
-        let token_storage = try!(DiskTokenStorage::new(&"secrets/token".to_string()));
-
-        let auth = Authenticator::new(
-            &secret,
-            DefaultAuthenticatorDelegate,
-            hyper::Client::with_connector(hyper::net::HttpsConnector::new(
-                hyper_rustls::TlsClient::new(),
-            )),
-            token_storage,
-            None,
-        );
+        let auth = try!(auth::new_authenticator());
         let hub = calendar3::CalendarHub::new(
             hyper::Client::with_connector(hyper::net::HttpsConnector::new(
                 hyper_rustls::TlsClient::new(),

@@ -1,3 +1,4 @@
-pub mod thread_pool;
+pub mod auth;
 pub mod calendar;
 pub mod gpio;
+pub mod thread_pool;
