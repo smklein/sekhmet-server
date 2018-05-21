@@ -2,7 +2,7 @@ extern crate sekhmet_server as sekhmet;
 extern crate chrono;
 
 use sekhmet::calendar::{Calendar, CalendarError, Color, Event};
-use sekhmet::gpio::Gpio;
+use sekhmet::gpio::{get_hardware, Hardware};
 use sekhmet::thread_pool::ThreadPool;
 
 use self::chrono::prelude::*;
@@ -57,9 +57,9 @@ fn main() {
         }
     }
 
-    let gpio = Gpio::new();
+    let mut hardware = get_hardware();
 
-    gpio.led_toggle(Duration::from_millis(1000));
+    hardware.led_toggle(Duration::from_millis(1000));
 
     // TODO(smklein): Listen on domain (or static ip?)
     // TODO(smklein): Authenticate to access

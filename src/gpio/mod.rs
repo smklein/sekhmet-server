@@ -1,54 +1,35 @@
-extern crate sysfs_gpio;
-
-use self::sysfs_gpio::{Direction, Pin};
 use std::thread::sleep;
 use std::time::Duration;
 
-/// An opaque wrapper around a gpio object
-pub struct Gpio {
-    led_pin: sysfs_gpio::Pin,
+// TODO(smklein): ... there has to be a better way to do
+// mocking. TL;DR: I want to use "real hardware" on
+// my ARM targets, but mock hardware on my development
+// machine.
+
+#[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
+mod gpio;
+#[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
+pub fn get_hardware() -> gpio::Gpio {
+    gpio::Gpio::new()
 }
 
-impl Gpio {
-    pub fn new() -> Gpio {
-        println!("Gpio::new()");
-        let io = Gpio {
-            led_pin: Pin::new(4),
-        };
+#[cfg(not(any(target_arch = "arm", target_arch = "aarch64")))]
+mod mock;
+#[cfg(not(any(target_arch = "arm", target_arch = "aarch64")))]
+pub fn get_hardware() -> mock::MockHardware {
+    mock::MockHardware::new()
+}
 
-        io.led_pin.export().unwrap();
-        io.led_pin.set_direction(Direction::Out).unwrap();
-        io.led_pin.set_value(1).unwrap();
+pub trait Hardware {
+    fn led_on(&mut self);
+    fn led_off(&mut self);
 
-        io
-    }
-
-    pub fn led_on(&self) {
-        self.led_pin.set_value(1).unwrap();
-    }
-
-    pub fn led_off(&self) {
-        self.led_pin.set_value(0).unwrap();
-    }
-
-    pub fn led_toggle(&self, duration: Duration) {
+    fn led_toggle(&mut self, duration: Duration) {
         loop {
             self.led_on();
             sleep(duration);
             self.led_off();
             sleep(duration);
         }
-    }
-
-
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn empty() {
-        assert_eq!(2 + 2, 4);
     }
 }
