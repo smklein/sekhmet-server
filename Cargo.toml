@@ -6,6 +6,7 @@ authors = ["Sean Klein <seanmarionklein@gmail.com>"]
 [dependencies]
 chrono = "*"
 google-calendar3 = "*"
+google-fitness1 = "*"
 hyper = "0.10.13"
 hyper-rustls = "0.6"
 time = "*"
