@@ -16,7 +16,7 @@ pub struct Fitness {
 }
 
 
-pub fn Go() {
+pub fn go() {
     let f = Fitness::new().unwrap();
     f.hello();
 }
@@ -48,7 +48,7 @@ impl From<String> for FitnessError {
 
 impl Fitness {
     pub fn new() -> Result<Fitness, FitnessError> {
-        let auth = try!(auth::new_authenticator());
+        let auth = auth::new_authenticator()?;
         let hub = fitness::Fitness::new(
             hyper::Client::with_connector(hyper::net::HttpsConnector::new(
                 hyper_rustls::TlsClient::new(),

@@ -16,10 +16,9 @@ impl<F: FnOnce()> FnBox for F {
     }
 }
 
-type Job = Box<FnBox + Send + 'static>;
+type Job = Box<dyn FnBox + Send + 'static>;
 
-// The Message types which may be received
-// on the threadpool.
+// The Message types which may be received on the threadpool.
 //
 // Either the message is a job, accompanied by a `Job` object, which includes a
 // closure that can be invoked with `call_closure_in_box`, or it is a request

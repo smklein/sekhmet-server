@@ -5,10 +5,10 @@ authors = ["Sean Klein <seanmarionklein@gmail.com>"]
 
 [dependencies]
 chrono = "*"
-google-calendar3 = "*"
-google-fitness1 = "*"
+google-calendar3 = "1.0.7"
+google-fitness1 = "1.0.7"
 hyper = "0.10.13"
 hyper-rustls = "0.6"
-time = "*"
-sysfs_gpio = "*"
-yup-oauth2 = "*"
+time = "0.1.40"
+sysfs_gpio = "0.5.3"
+yup-oauth2 = "1.0.7"

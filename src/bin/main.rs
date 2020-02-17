@@ -2,7 +2,7 @@ extern crate sekhmet_server as sekhmet;
 extern crate chrono;
 
 use sekhmet::calendar::{Calendar, CalendarError, Color, Event};
-use sekhmet::fit::Go;
+use sekhmet::fit::go;
 use sekhmet::gpio::{get_hardware, Hardware};
 use sekhmet::thread_pool::ThreadPool;
 
@@ -19,7 +19,7 @@ use std::time::Duration;
 fn sekhmet_events(c: &Calendar) -> Result<Vec<Event>, CalendarError> {
     let start = Utc::now();
     let end = start + CDuration::days(1);
-    let events = try!(c.get_events(start, end));
+    let events = c.get_events(start, end)?;
 
     println!("--- All events:");
     for e in events.iter() {
@@ -37,7 +37,7 @@ fn sekhmet_events(c: &Calendar) -> Result<Vec<Event>, CalendarError> {
 fn main() {
     println!("sekhmet server... STARTING");
 
-    Go();
+    go();
     let mut c = Calendar::new().unwrap();
 
     println!("sekhmet server... created calendar");

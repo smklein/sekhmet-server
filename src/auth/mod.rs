@@ -37,8 +37,8 @@ pub fn new_authenticator() -> Result<Authorizer, AuthError> {
     // Get an ApplicationSecret instance by some means. It contains the
     // `client_id` and `client_secret`, among other things.
     let secret_path = Path::new("secrets/secret.json");
-    let secret = try!(oauth2::read_application_secret(secret_path));
-    let token_storage = try!(DiskTokenStorage::new(&"secrets/token".to_string()));
+    let secret = oauth2::read_application_secret(secret_path)?;
+    let token_storage = DiskTokenStorage::new(&"secrets/token".to_string())?;
 
     Ok(Authenticator::new(
         &secret,

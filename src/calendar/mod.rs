@@ -156,7 +156,7 @@ impl From<String> for CalendarError {
 
 impl Calendar {
     pub fn new() -> Result<Calendar, CalendarError> {
-        let auth = try!(auth::new_authenticator());
+        let auth = auth::new_authenticator()?;
         let hub = calendar3::CalendarHub::new(
             hyper::Client::with_connector(hyper::net::HttpsConnector::new(
                 hyper_rustls::TlsClient::new(),
@@ -172,12 +172,12 @@ impl Calendar {
     }
 
     pub fn set_primary(&mut self) -> Result<(), CalendarError> {
-        let (_, list) = try!(self.hub.calendar_list().list().doit());
-        let items = try!(list.items.ok_or("No calendars listed".to_string()));
-        let primary = try!(items.iter().find(|&entry| entry.primary.is_some()).ok_or(
+        let (_, list) = self.hub.calendar_list().list().doit()?;
+        let items = list.items.ok_or("No calendars listed".to_string())?;
+        let primary = items.iter().find(|&entry| entry.primary.is_some()).ok_or(
             "No primary".to_string(),
-        ));
-        self.id = try!(primary.id.clone().ok_or("Primary missing ID".to_string()));
+        )?;
+        self.id = primary.id.clone().ok_or("Primary missing ID".to_string())?;
         Ok(())
     }
 
@@ -185,12 +185,10 @@ impl Calendar {
     pub fn set_color(&self, event: &mut Event, color: Color) -> Result<(), CalendarError> {
         event.original.color_id = Some(color_id(color).to_string());
 
-        try!(
-            self.hub
-                .events()
-                .update(event.original.clone(), &self.id, &event.id)
-                .doit()
-        );
+        self.hub
+            .events()
+            .update(event.original.clone(), &self.id, &event.id)
+            .doit()?;
 
         Ok(())
     }
@@ -205,7 +203,7 @@ impl Calendar {
         let min = start.to_rfc3339();
         let max = end.to_rfc3339();
 
-        let (_, events) = try!(
+        let (_, events) =
             self.hub
                 .events()
                 .list(&self.id)
@@ -213,10 +211,9 @@ impl Calendar {
                 .time_max(&max)
                 .single_events(true)
                 .order_by("startTime")
-                .doit()
-        );
+                .doit()?;
 
-        let items = try!(events.items.ok_or("No items".to_string()));
+        let items = events.items.ok_or("No items".to_string())?;
 
         let mut result = Vec::new();
 
