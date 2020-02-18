@@ -1,0 +1,27 @@
+# TODOs
+
+... in a vague order of priority.
+
+1) Decouple from google-calendar3 and google-fitness1 APIs.
+
+Apparently there is an ongoing migration to https://github.com/google-apis-rs/generator , which
+also seems to be kinda WIP, so maybe I can contribute something there if I ever figure out how
+to write not-totally-scrappy Rust code.
+
+2) Actually improve the testing situation. I know this is largely integration,
+but ATM it's kinda a disaster.
+
+3) Figure out what you *actually* want to do with the google fit API.
+
+4) Figure out what you *actually* want to do with GPIOs.
+
+5) Play with some async APIs?
+
+6) Clean up error handling paths.
+
+7) Make setting primary part of init process more explicitly.
+
+8) CLI interface for calendar? Would be handy
+
+9) Service accounts vs Oauth2 -- figure out the difference? Can we avoid that devices page
+on every new permission?

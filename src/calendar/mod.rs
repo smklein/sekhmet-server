@@ -171,6 +171,8 @@ impl Calendar {
         Ok(cal)
     }
 
+    // TODO(smklein): Should this just be part of the initialization process?
+    // (Can be manually changed later...)
     pub fn set_primary(&mut self) -> Result<(), CalendarError> {
         let (_, list) = self.hub.calendar_list().list().doit()?;
         let items = list.items.ok_or("No calendars listed".to_string())?;
@@ -207,6 +209,7 @@ impl Calendar {
             self.hub
                 .events()
                 .list(&self.id)
+                .add_scope(calendar3::Scope::Readonly)
                 .time_min(&min)
                 .time_max(&max)
                 .single_events(true)
