@@ -16,10 +16,7 @@ use std::fmt;
 
 /// An opaque wrapper around a Google Calendar object.
 pub struct Calendar {
-    hub: calendar3::CalendarHub<
-        hyper::Client,
-        auth::Authorizer,
-    >,
+    hub: calendar3::CalendarHub<hyper::Client, auth::Authorizer>,
     id: String,
 }
 
@@ -91,12 +88,11 @@ impl fmt::Display for Event {
             None => "".to_string(),
         };
 
-        write!(f, "{} - {}: {}{}{}",
-               self.start,
-               self.end,
-               color,
-               self.summary,
-               location)
+        write!(
+            f,
+            "{} - {}: {}{}{}",
+            self.start, self.end, color, self.summary, location
+        )
     }
 }
 
@@ -175,11 +171,17 @@ impl Calendar {
     // (Can be manually changed later...)
     pub fn set_primary(&mut self) -> Result<(), CalendarError> {
         let (_, list) = self.hub.calendar_list().list().doit()?;
-        let items = list.items.ok_or("No calendars listed".to_string())?;
-        let primary = items.iter().find(|&entry| entry.primary.is_some()).ok_or(
-            "No primary".to_string(),
-        )?;
-        self.id = primary.id.clone().ok_or("Primary missing ID".to_string())?;
+        let items = list
+            .items
+            .ok_or_else(|| "No calendars listed".to_string())?;
+        let primary = items
+            .iter()
+            .find(|&entry| entry.primary.is_some())
+            .ok_or_else(|| "No primary".to_string())?;
+        self.id = primary
+            .id
+            .clone()
+            .ok_or_else(|| "Primary missing ID".to_string())?;
         Ok(())
     }
 
@@ -205,25 +207,24 @@ impl Calendar {
         let min = start.to_rfc3339();
         let max = end.to_rfc3339();
 
-        let (_, events) =
-            self.hub
-                .events()
-                .list(&self.id)
-                .add_scope(calendar3::Scope::Readonly)
-                .time_min(&min)
-                .time_max(&max)
-                .single_events(true)
-                .order_by("startTime")
-                .doit()?;
+        let (_, events) = self
+            .hub
+            .events()
+            .list(&self.id)
+            .add_scope(calendar3::Scope::Readonly)
+            .time_min(&min)
+            .time_max(&max)
+            .single_events(true)
+            .order_by("startTime")
+            .doit()?;
 
-        let items = events.items.ok_or("No items".to_string())?;
+        let items = events.items.ok_or_else(|| "No items".to_string())?;
 
         let mut result = Vec::new();
 
         for item in items.iter() {
-            match parse_event(item.clone()) {
-                Some(e) => result.push(e),
-                None => (),
+            if let Some(e) = parse_event(item.clone()) {
+                result.push(e)
             }
         }
 

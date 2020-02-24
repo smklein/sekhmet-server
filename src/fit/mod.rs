@@ -9,12 +9,8 @@ use auth;
 
 /// An opaque wrapper around a Google Fitness object.
 pub struct Fitness {
-    hub: fitness::Fitness<
-        hyper::Client,
-        auth::Authorizer,
-    >,
+    hub: fitness::Fitness<hyper::Client, auth::Authorizer>,
 }
-
 
 pub fn go() {
     let f = Fitness::new().unwrap();
@@ -55,9 +51,7 @@ impl Fitness {
             )),
             auth,
         );
-        let f = Fitness {
-            hub,
-        };
+        let f = Fitness { hub };
 
         Ok(f)
     }
@@ -70,8 +64,7 @@ impl Fitness {
         println!("Acquired data sources...");
         let srcs = list.data_source.unwrap();
         println!("Unwrapped sources..");
-        let mut i = 0;
-        for src in srcs.iter() {
+        for (mut i, src) in srcs.iter().enumerate() {
             // XXX yikes, is this listing *everything* ???
             // XXX contains ~90 sources?
             println!("Fitness listing data sources: {:#?}", src);

@@ -1,7 +1,7 @@
 extern crate sysfs_gpio;
 
-use gpio::Hardware;
 use self::sysfs_gpio::{Direction, Pin};
+use gpio::Hardware;
 
 /// An opaque wrapper around a gpio object
 pub struct Gpio {

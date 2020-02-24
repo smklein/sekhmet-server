@@ -1,5 +1,6 @@
 use gpio::Hardware;
 
+#[derive(Default)]
 pub struct MockHardware {
     led_state: bool,
 }
@@ -18,11 +19,7 @@ impl Hardware for MockHardware {
 
 impl MockHardware {
     pub fn new() -> MockHardware {
-        let io = MockHardware {
-            led_state: false,
-        };
-
-        io
+        MockHardware { led_state: false }
     }
 }
 

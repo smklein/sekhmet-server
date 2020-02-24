@@ -16,10 +16,7 @@ pub enum AuthError {
     Other(String),
 }
 
-pub type Authorizer = Authenticator<
-            DefaultAuthenticatorDelegate,
-            DiskTokenStorage,
-            hyper::Client>;
+pub type Authorizer = Authenticator<DefaultAuthenticatorDelegate, DiskTokenStorage, hyper::Client>;
 
 impl From<io::Error> for AuthError {
     fn from(err: io::Error) -> AuthError {
@@ -50,4 +47,3 @@ pub fn new_authenticator() -> Result<Authorizer, AuthError> {
         None,
     ))
 }
-

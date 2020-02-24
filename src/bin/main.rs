@@ -1,5 +1,5 @@
-extern crate sekhmet_server as sekhmet;
 extern crate chrono;
+extern crate sekhmet_server as sekhmet;
 
 use sekhmet::calendar::{Calendar, CalendarError, Color, Event};
 use sekhmet::fit::go;
@@ -9,10 +9,10 @@ use sekhmet::thread_pool::ThreadPool;
 use self::chrono::prelude::*;
 use self::chrono::Duration as CDuration;
 
+use std::fs::File;
 use std::io::prelude::*;
 use std::net::TcpListener;
 use std::net::TcpStream;
-use std::fs::File;
 use std::thread;
 use std::time::Duration;
 
@@ -26,12 +26,10 @@ fn sekhmet_events(c: &Calendar) -> Result<Vec<Event>, CalendarError> {
         println!("{}", e);
     }
 
-    Ok(
-        events
-            .into_iter()
-            .filter(|e| e.summary.starts_with("#sek "))
-            .collect(),
-    )
+    Ok(events
+        .into_iter()
+        .filter(|e| e.summary.starts_with("#sek "))
+        .collect())
 }
 
 fn main() {
@@ -71,7 +69,9 @@ fn main() {
     for stream in listener.incoming().take(10) {
         let stream = stream.unwrap();
 
-        pool.execute(|| { handle_connection(stream); });
+        pool.execute(|| {
+            handle_connection(stream);
+        });
     }
 
     println!("Shutting down.");
